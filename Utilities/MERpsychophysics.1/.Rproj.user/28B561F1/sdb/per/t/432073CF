@@ -1,0 +1,15 @@
+{
+    "contents" : "MERtreatment = function(xplode.obj, datafr){\n\n  treat.lev = nlevels(xplode.obj$model.frame[,xplode.obj$factor.col])\n  temp.models = delta.par = temp.xplode = vector(\"list\", treat.lev)\n  names(delta.par) = xplode.obj$factor.parnames\n  \n  for(i in 1:treat.lev){\n   contrasts(datafr[,which(names(datafr) == xplode.obj$factor.colname)]) = contr.treatment(treat.lev, base = i)\n   temp.models[[i]] = glmer(formula = xplode.obj$formula, family = binomial(\"probit\"), data = datafr, nAGQ = 1)\n   temp.xplode[[i]] = xplode.mer(temp.models[[i]],\n                                 name.cont = xplode.obj$cont.colname, name.fact = xplode.obj$factor.colname)\n   delta.par[[i]] = MERdelta.probit(temp.xplode[[i]])\n }\n  return(delta.par)\n}",
+    "created" : 1398354343037.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "233868551",
+    "id" : "432073CF",
+    "lastKnownWriteTime" : 1398357784,
+    "path" : "~/Documents/MERpsychophysics.1/MERtreatment.r",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

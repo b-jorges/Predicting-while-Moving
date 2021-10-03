@@ -1,0 +1,17 @@
+{
+    "contents" : "#psych.function fit a glm to binary data and plot the fitted function\n#AM did it on 25.07.2013\n#AM modified on 30.07.2015: PSE and JND in the outcome\n#To do: multivariable model plotting\n\n#ps.formula\t\tformula object such as as.formula(\"cbind(away, towards) ~ velocity\")\n#ps.link\t\tcharacter. link function\n#ps.data  \tdata.frame including the binary response variables and predictor\n#range\t\t\tdomain of the fitted function\n#ps.col   character. Color of the line\n#ps.lines   logical, indicatinf if a line of the model fit should be added to the existing plot \n\npsych.function = function(ps.formula, ps.link, ps.data, x.range = c(NA, NA), ps.x = NA, ps.lines = F, ps.col = \"black\"){\n\tmyfit = vector(\"list\", 2)\n  ps.terms = terms(ps.formula)\n\tmodel.glm = glm(formula = ps.formula, family = binomial(link = ps.link), data = ps.data)\n\tmyfit[[1]] = model.glm\n  \n  if(ps.link == \"probit\"){\n    myfit[[2]] = delta.psy.probit(model.glm)\n    if(ps.lines == T){\n      segments(x0 = myfit[[2]][1,3], y0 = 0.5, x1 = myfit[[2]][1,4], y1 = 0.5, col = ps.col)\n    }\n  }else{\n    myfit[[2]] = NA\n    warning(\"Use the probit link function to get the estimate of the PSE and the JND\")\n  }\n  \n\tif(ps.lines == T){\n    if(is.na(ps.x)){\n      ps.x <- data.frame(seq(x.range[1], x.range[2], length.out = 1000))\n      names(ps.x) = attr(ps.terms, \"term.labels\")\n    }\n\t\tlines(x = seq(x.range[1], x.range[2], length.out = 1000),\n\t\t y = predict(object = model.glm, newdata = data.frame(ps.x), type = \"response\"),\n\t\t col = ps.col)\n\t\t}\n\treturn(myfit)\n\t}\n",
+    "created" : 1454433022821.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1218290209",
+    "id" : "19E24419",
+    "lastKnownWriteTime" : 1438335484,
+    "path" : "D:/Documents/MERpsychophysics.1/psych.function.r",
+    "project_path" : "psych.function.r",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

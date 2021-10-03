@@ -1,0 +1,17 @@
+{
+    "contents" : "MERtreatment = function(xplode.obj){\n treat.lev = nlevels(xplode.mod$model.frame[,xplode.mod$factor.col])\n models = delta.par = vector(\"list\", treat.lev)\n for(i in 1:treat.lev){\n   contrasts(xplode.mod$model.frame[,xplode.mod$factor.col]) = contr.treatment(treat.lev, base = i)\n   models[[i]] <- glmer(formula = xplode.mod$formula, family = binomial(\"probit\"),\n                        data = datafr, nAGQ = 1) #to do: resp variable from the data frame?\n   \n }\n  \n}",
+    "created" : 1398160211530.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "41504683",
+    "id" : "FFC4FA6D",
+    "lastKnownWriteTime" : 1398162693,
+    "path" : "~/Documenti/Ale/MERpsychophysics.1/MERtreatment.r",
+    "project_path" : "MERtreatment.r",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

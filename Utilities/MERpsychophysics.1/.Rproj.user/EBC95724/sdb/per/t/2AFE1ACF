@@ -1,0 +1,16 @@
+{
+    "contents" : "MERdelta.probit <- function(xplode.obj, alpha = 0.05){\n  \n  #check if link = probit\n  if(xplode.obj$family$link != \"probit\"){\n      output = NA\n      print(\"Use a probit link function\")\n  }else{\n      n.pf = length(xplode.obj$psychometrics)\n      output = vector(\"list\", length = n.pf)\n      names(output) = names(xplode.obj$psychometrics)\n      \n      for(i in 1:n.pf){\n        #copy all the variables in temporary objects\n        pse <- -(xplode.obj$psychometrics[[i]]$intercept[1]/\n                                      xplode.obj$psychometrics[[i]]$slope[1])\n        slope <- xplode.obj$psychometrics[[i]]$slope[1]\n        \n        var.intercept <- xplode.obj$psychometrics[[i]]$intercept[2]\n        var.slope <- xplode.obj$psychometrics[[i]]$slope[2]\n        \n        #cov(alpha, slope): for all pfs, is approximated to the cov(alpha1, slope1)\n        cov.intercept.slope <- xplode.obj$psychometrics$pf1$cov\n        \n        #compute all the other variables\n        var.pse <- (1/slope^2)*(var.intercept + (2*pse*cov.intercept.slope)+(pse^2*var.slope))   #PSE\n        inferior.pse <- pse - (qnorm(1 - (alpha/2))*sqrt(var.pse))\n        superior.pse <- pse + (qnorm(1 - (alpha/2))*sqrt(var.pse))\n        \n        jnd <- qnorm(0.75) * (1/slope)\n        var.jnd <- (qnorm(0.75) * (-1/slope^2))^2 * var.slope                           #JND\n        inferior.jnd <- jnd - (qnorm(1 - (alpha/2))*sqrt(var.jnd))\n        superior.jnd <- jnd + (qnorm(1 - (alpha/2))*sqrt(var.jnd))\n        \n        output[[i]] <- matrix(rbind(c(pse, sqrt(var.pse), inferior.pse, superior.pse),\n                               c(jnd, sqrt(var.jnd), inferior.jnd, superior.jnd)), nrow = 2,\n                         dimnames = list(param <- c(\"pse\", \"jnd\"),\n                                         statistics <- c(\"Estimate\",\"Std. Error\", \"Inferior\", \"Superior\")))\n      }\n    }\n    \n\n  return(output)\n}\n",
+    "created" : 1398154079122.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3086746419",
+    "id" : "2AFE1ACF",
+    "lastKnownWriteTime" : 1388684424,
+    "path" : "~/Documenti/Ale/MERpsychophysics.1/MERdelta.probit.r",
+    "project_path" : "MERdelta.probit.r",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
