@@ -9,3 +9,6 @@ The respective Unity projects can be downloaded here: https://osf.io/6mz4w/
 The stereovision test has it's own GitHub repository with more detail on its inner workings: https://github.com/b-jorges/Stereotest
 
 The instructions video can be viewed on YouTube: https://www.youtube.com/watch?v=7EA21uNC5Rw&ab_channel=Bj%C3%B6rnJ%C3%B6rges
+
+The test data in the "Data" folder was collected by one of the authors (of themselves) and then copied-and-pasted with a different label in order to test 
+the analyses scripts (which include LMM analyses that require at least two participants).

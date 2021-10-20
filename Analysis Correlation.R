@@ -6,7 +6,7 @@ setwd(dirname(rstudioapi::getSourceEditorContext()$path)) #set path of this scri
 source("Utilities/parabolic.r") #load a bunch of custom functions from the file "parabolic.r" in the folder "Utilities"
 require(lme4)
 require(lmerTest)
-source("Analysis Motion Estimation.r")
+source("Analysis Speed Estimation.r")
 source("Analysis Prediction.r")
 
 
