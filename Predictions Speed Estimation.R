@@ -1,104 +1,114 @@
 require(dplyr)
-require(ggplot)
+require(ggplot2)
 require(lme4)
 require(lmerTest)
 require(quickpsy)
+require(purrr)
+source("Utilities/parabolic.r")
 
-#setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-source("SimulateDataFunction.R")
-set.seed(25)
+velH = c(4, 5, 6) #m/s
+self_velH = c(-3.6,0,3.6) #meters over half a second, = 4m/s on average, but Gaussian motion profile
+Participants = paste0("p",1:40)
+ConditionOfInterest = c("Observer Static", "Same Direction", "Opposite Directions")
+StandardValues = c(4,5,6)
+reps_MotionEstimation = 70
 
-Power_SpeedEstimation = data.frame()
+###Get variability factors for each participant, between-participant variability:
+ParticipantVariability = data.frame(ID = Participants,
+                                    Bias_ID = rnorm(length(Participants),0.2,0.3), #get self-motion bias for each participant
+                                    Variability_ID = rnorm(length(Participants),0.2,0.3), #get self-motion variability for each participant
+                                    PSE_ID = 1,#rnorm(length(Participants),1,0.15), #multiplicator for the PSE for each person
+                                    SD_ID = rnorm(length(Participants),1,0.15)) #multiplicator for the
 
-RangeParticipants = c(10,15,20,25,30)
-RangeReps = c(50,70,90)
-nIterations = 1
+Psychometric = expand.grid(Participant=Participants, 
+                           ConditionOfInterest=ConditionOfInterest, 
+                           StandardValues=StandardValues, 
+                           reps = 1:reps_MotionEstimation)
 
-for (i in RangeParticipants){
-  
-  print(paste0(i, " participants"))
-  
-  
-  for (k in RangeReps){
-    
-    print(paste0(k, " trials"))
-  
-    for (j in 1:nIterations) {
-      
-      print(paste0(j, " iteration(s)"))
-      
-      SimedData = SimulatePsychometricData(nParticipants = i,
-                                           ConditionOfInterest = c(0,1),
-                                           StandardValues = c(4, 5, 6),
-                                           reps = k,
-                                           PSE_Difference = -0.1,
-                                           JND_Difference = -0.1,
-                                           Multiplicator_PSE_Standard = 0,
-                                           Multiplicator_SD_Standard = 0.2,
-                                           Type_ResponseFunction = "Cauchy",
-                                           SD_ResponseFunction = 0.08,
-                                           Mean_Variability_Between = 0.2,
-                                           SD_Variability_Between = 0.2)
-
-      (Parameters = quickpsy(SimedData,Difference,Answer,
-                             grouping = .(ID,ConditionOfInterest,StandardValues), 
-                             bootstrap = "none")$par)
-      Parameters2 = Parameters %>%
-        filter(parn == "p1") %>%
-        select(ID,ConditionOfInterest,Mean=par, StandardValues)
-      Parameters2$SD = Parameters$par[Parameters$parn == "p2"]
-      FittedPsychometricFunctions = Parameters2
-
-      LMM_Mean = lmer(Mean ~ ConditionOfInterest + (1 | ID) + (1 | StandardValues),
-                 data = FittedPsychometricFunctions)
-      
-      LMM_SD = lmer(SD ~ ConditionOfInterest + (1 | ID) + (1 | StandardValues),
-                 data = FittedPsychometricFunctions)
-      
-      summary(GLMM)$coef[15]
-      summary(GLMM)$coef[16]
-          
-      Power_SpeedEstimation = rbind(Power_SpeedEstimation,
-                                data.frame(nParticipants=rep(i,4),
-                                  reps=rep(k,4), 
-                                  pvalue = c(summary(GLMM)$coefficients[15],
-                                             summary(GLMM)$coefficients[16],
-                                             summary(LMM_Mean)$coef[10],
-                                             summary(LMM_SD)$coef[10]),
-                                  iteration = rep(j,4),
-                                  Label = c("PSE (GLMM)","JND (GLMM)","PSE (LMM)","SD (LMM)")))
-    }
-  }
+for (i in 1:length(ParticipantVariability$ID)){
+  ID = ParticipantVariability$ID[i]
+  Psychometric$EffectID_PSE[Psychometric$Participant == ID] = ParticipantVariability$Bias_ID[i]
+  Psychometric$EffectID_JND[Psychometric$Participant == ID] = ParticipantVariability$Variability_ID[i]
+  Psychometric$PSE_ID[Psychometric$Participant == ID] = ParticipantVariability$PSE_ID[i]
+  Psychometric$SD_ID[Psychometric$Participant == ID] = ParticipantVariability$SD_ID[i]
 }
 
+Psychometric = Psychometric %>%
+  group_by(Participant) %>%#
+  mutate(PSE_Factor_ID = PSE_ID, #how much variability is in the means of the psychometric functions between subjects?
+         SD_Factor_ID = SD_ID) #how much variability is in the standard deviations of the psychometric functions between subjects?
 
-save(Power_SpeedEstimation, file = paste0(dirname(rstudioapi::getSourceEditorContext()$path),
-                                   "/SavedVariables/Power_SpeedEstimation.RData"))
-load(file=paste0(dirname(rstudioapi::getSourceEditorContext()$path),"/SavedVariables/Power_SpeedEstimation.RData"))
+Multiplicator_PSE_Standard = 1
+Multiplicator_SD_Standard = WFtoSD(0.1)
+
+Psychometric = Psychometric %>%
+  mutate(
+    Mean_Standard = StandardValues*Multiplicator_PSE_Standard, #get the mean of the psychometric function for the baseline condition
+    SD_Standard = StandardValues*Multiplicator_SD_Standard, #get the standard deviation of the psychometric function for the baseline condition
+    Mean = case_when(ConditionOfInterest %in% c("Observer Static", "Same Direction") ~ Mean_Standard*PSE_Factor_ID,
+                     ConditionOfInterest == "Opposite Directions" ~ (Mean_Standard + EffectID_PSE)*PSE_Factor_ID),#same but for condition of interest
+    SD = case_when(ConditionOfInterest %in% c("Observer Static", "Same Direction") ~ abs(SD_Standard*SD_Factor_ID),
+                   ConditionOfInterest == "Opposite Directions" ~ abs(SD_Standard + EffectID_JND*SD_Standard)*SD_Factor_ID))#same but for condition of interest
+
+SD_ResponseFunction = 0.1
+
+Psychometric = Psychometric %>%
+  mutate(
+    #same but values drawn from a Cauchy function
+    staircase_factor = rcauchy(length(reps),1,SD_ResponseFunction))
+
+Psychometric = Psychometric %>%
+  mutate(Presented_TestStimulusStrength = Mean*staircase_factor, #which stimulus strengths are shown? transform values from above (standardized to 1) to the stimulus strengths in condition of interest
+         Difference = Presented_TestStimulusStrength - StandardValues, #difference in stimulus strength between reference stimulus and test stimulus strength (chosen by staircase) 
+         AnswerProbability = pnorm(Presented_TestStimulusStrength,Mean,SD), #choose for each difference how likely the participant is to choose one or the other as more intense
+         ##get binary answers ("Test was stronger" yes/no) from probabilities for each trial
+         Answer = as.numeric(rbernoulli(length(AnswerProbability),AnswerProbability)) #draw answers based on probability
+  )
+
+Parameters = quickpsy::quickpsy(Psychometric,Presented_TestStimulusStrength,Answer,
+                                grouping = .(Participant,ConditionOfInterest,StandardValues),
+                                bootstrap = "none")$par
+
+Parameters2 = Parameters %>%
+  filter(parn == "p1") %>%
+  select(Participant,ConditionOfInterest,Mean=par, StandardValues)
+Parameters2$SD = Parameters$par[Parameters$parn == "p2"]
+FittedPsychometricFunctions = Parameters2
+
+#See how the model used for analysis fares on the simulated data. Model for accuracy:
+Model1 = lmer(Mean ~ ConditionOfInterest + (StandardValues | Participant),
+          data = FittedPsychometricFunctions,
+          control = lmerControl(optimizer = "bobyqa",
+                                optCtrl = list(maxfun = 2e4)))
+summary(Model1)
 
 
-#do everything at alpha level of 0.05
-alpha = 0.05
+#Models for precision
+Model2 = lmer(log(SD) ~ ConditionOfInterest + (StandardValues | Participant),
+              data = FittedPsychometricFunctions)
+summary(Model2)
 
-Power_SpeedEstimation = Power_SpeedEstimation %>% group_by(nParticipants,reps,Label) %>% 
-  mutate(Power = mean(pvalue < alpha))
+# Plots with Predictions (Figure 03)
+Figure_SpeedPredictions1 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Factor = paste0(StandardValues," m/s")),
+                                  aes(velH_Factor,Mean,color = ConditionOfInterest)) +
+  geom_boxplot(size = 1.5) +
+  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
+  xlab("Motion Profile") +
+  ylab("PSE (m/s)") +
+  scale_x_discrete(name = "")  +
+  theme(legend.position = c(0.1,0.8))
 
-Power_SpeedEstimation = (Power_SpeedEstimation %>% group_by(nParticipants,reps, Label) %>% 
-                        slice(1))
-
-
-ggplot(Power_SpeedEstimation, aes(nParticipants,Power, color = as.factor(reps))) +
-  geom_line(size = 1) +
-  xlab("Number of Participants") +
-  ylab("Power") +
-  scale_x_continuous(breaks = RangeParticipants) +
-  scale_color_manual(name = "Repetitions\nper Staircase", 
-                     values = c(Red,BlauUB,Yellow)) +
-  geom_hline(yintercept = 0.9, linetype=2) +
-  geom_hline(yintercept = 0.95, linetype=3) +
-  ylim(c(0,1)) +
-  facet_wrap(Label~.) +
-  theme(legend.position = c(0.4,0.2))
-ggsave(paste0(dirname(rstudioapi::getSourceEditorContext()$path),
-              "/Figures/Power Analysis Speed Estimation.jpg"), w = 5, h = 5)
+Predictions$SelfmotionDirection
+FittedPsychometricFunctions$ConditionOfInterest
+Figure_SpeedPredictions2 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Factor = paste0(StandardValues," m/s")),
+                                  aes(velH_Factor,SD,color = ConditionOfInterest)) +
+  geom_boxplot(size = 1.5) +
+  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
+  scale_x_discrete(name = "Motion Profile") +
+  xlab("Motion Profile") + 
+  ylab("SD of Psychometric Function (m/s)") +
+  theme(legend.position = "none")
+plot_grid(Figure_SpeedPredictions1,Figure_SpeedPredictions2)
+ggsave("Figures/(Figure 03) Predictions Hypotheses 2a and 2b.jpg", w = 12, h = 6)
