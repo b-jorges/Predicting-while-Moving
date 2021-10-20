@@ -111,4 +111,4 @@ Figure_SpeedPredictions2 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Fa
   ylab("SD of Psychometric Function (m/s)") +
   theme(legend.position = "none")
 plot_grid(Figure_SpeedPredictions1,Figure_SpeedPredictions2)
-ggsave("Figures/(Figure 03) Predictions Hypotheses 2a and 2b.jpg", w = 12, h = 6)
+ggsave("Figures/(Figure 04) Predictions Hypotheses 2a and 2b.jpg", w = 12, h = 6)

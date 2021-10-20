@@ -389,22 +389,22 @@ Power_Prediction = ggplot(Power, aes(nParticipants,Power_Prediction,
         legend.background = element_rect(fill = "lightgrey")) +
   ggtitle("A. Prediction")
 
-# Power_Prediction_Same = ggplot(Power, aes(nParticipants,Power_Prediction_Same,
-#                                           color = as.factor(reps_Prediction),
-#                                           linetype = as.factor(reps_Prediction))) +
-#   geom_line(size = 1) +
-#   xlab("Number of Participants") +
-#   ylab("Power") +
-#   scale_x_continuous(breaks = c(10,20,30)) +
-#   scale_color_manual(name = "Repetitions\nper Condition",
-#                      values = c("pink","grey","darkgreen")) +
-#   scale_linetype_manual(name = "Repetitions\nper Condition",
-#                         values = c(3,2,1)) +
-#   geom_hline(yintercept = 0.05, linetype=2) +
-#   ylim(c(0,1)) +
-#   facet_grid(.~Label) +
-#   theme(legend.position = c(0.2,0.3)) +
-#   ggtitle("A. Prediction (No Effect)")
+Power_Prediction_Same = ggplot(Power, aes(nParticipants,Power_Prediction_Same,
+                                          color = as.factor(reps_Prediction),
+                                          linetype = as.factor(reps_Prediction))) +
+  geom_line(size = 1) +
+  xlab("Number of Participants") +
+  ylab("Power") +
+  scale_x_continuous(breaks = c(10,20,30)) +
+  scale_color_manual(name = "Repetitions\nper Condition",
+                     values = c("pink","grey","darkgreen")) +
+  scale_linetype_manual(name = "Repetitions\nper Condition",
+                        values = c(3,2,1)) +
+  geom_hline(yintercept = 0.05, linetype=2) +
+  ylim(c(0,1)) +
+  facet_grid(.~Label) +
+  theme(legend.position = c(0.2,0.3)) +
+  ggtitle("A. Prediction (No Effect)")
 
 
 #####Figure power motion estimation
@@ -428,18 +428,18 @@ Power_MotionEstimation = ggplot(Power, aes(nParticipants,Power_MotionEstimation,
         legend.background = element_rect(fill = "lightgrey")) +
   ggtitle("B. Speed Estimation")
 
-# Power_MotionEstimation_Same = ggplot(Power, aes(nParticipants,Power_MotionEstimation_Same, color = as.factor(reps_MotionEstimation))) +
-#   geom_line(size = 1) +
-#   xlab("Number of Participants") +
-#   ylab("Power") +
-#   scale_x_continuous(breaks = c(10,20,30)) +
-#   scale_color_manual(name = "Repetitions\nper Condition",
-#                      values = c("red","blue","orange")) +
-#   geom_hline(yintercept = 0.05, linetype=2) +
-#   ylim(c(0,1)) +
-#   facet_grid(.~Label) +
-#   theme(legend.position = c(0.2,0.3)) +
-#   ggtitle("B. Speed Estimation (No Effect)")
+Power_MotionEstimation_Same = ggplot(Power, aes(nParticipants,Power_MotionEstimation_Same, color = as.factor(reps_MotionEstimation))) +
+  geom_line(size = 1) +
+  xlab("Number of Participants") +
+  ylab("Power") +
+  scale_x_continuous(breaks = c(10,20,30)) +
+  scale_color_manual(name = "Repetitions\nper Condition",
+                     values = c("red","blue","orange")) +
+  geom_hline(yintercept = 0.05, linetype=2) +
+  ylim(c(0,1)) +
+  facet_grid(.~Label) +
+  theme(legend.position = c(0.2,0.3)) +
+  ggtitle("B. Speed Estimation (No Effect)")
 
 
 #####Figure power correlations
@@ -482,4 +482,4 @@ Power_Correlation_Same = ggplot(Power, aes(nParticipants,Power_Correlation_Same,
 
 plot_grid(Power_Prediction,Power_MotionEstimation,Power_Correlation, nrow = 1)
 ggsave(paste0(dirname(rstudioapi::getSourceEditorContext()$path),
-              "/Figures/(Figure 05) Power Analysis Correlation.jpg"), w = 18, h = 6)
+              "/Figures/(Figure 06) Power Analysis Correlation.jpg"), w = 18, h = 6)

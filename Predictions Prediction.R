@@ -137,4 +137,4 @@ Figure_Predictions2 = ggplot(Prediction_SDs %>%
   ggtitle("B.")
 
 plot_grid(Figure_Predictions1,Figure_Predictions2, rel_widths = c(0.8,1))
-ggsave("Figures/(Figure 02) Predictions Hypotheses 1a and 1b.jpg", w = 12, h = 6)
+ggsave("Figures/(Figure 03) Predictions Hypotheses 1a and 1b.jpg", w = 12, h = 6)

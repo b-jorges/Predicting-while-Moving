@@ -287,4 +287,4 @@ Figure_Predictions_Correlations2 = ggplot(Correlations %>%
         legend.position = "none")
 
 plot_grid(Figure_Predictions_Correlations1,Figure_Predictions_Correlations2)
-ggsave("Figures/(Figure 04) Predictions Hypotheses 3a and 3b.jpg", w = 12, h = 6)
+ggsave("Figures/(Figure 05) Predictions Hypotheses 3a and 3b.jpg", w = 12, h = 6)
