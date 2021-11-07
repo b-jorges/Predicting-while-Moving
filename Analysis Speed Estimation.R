@@ -30,8 +30,6 @@ nStaircasesBefore = length((MotionEstimation %>%
                               group_by(subject,velH,velH_Subject) %>% 
                               slice(1))$subject)
 nStaircasesBefore
-View(MotionEstimation)
-
 
 InspectOutliers = MotionEstimation %>% 
   group_by(subject,velH,velH_Subject) %>% 
@@ -57,15 +55,36 @@ Parameters2 = Parameters %>%
 Parameters2$SD = Parameters$par[Parameters$parn == "p2"]
 FittedPsychometricFunctions_Analysis = Parameters2
 
+FittedPsychometricFunctions_Analysis = FittedPsychometricFunctions_Analysis %>% 
+  mutate(RetinalSpeed = case_when(
+    Congruent == "Same Direction" & velH == 4 ~ 21.5,
+    Congruent == "Same Direction" & velH == 5 ~ 23.3,
+    Congruent == "Same Direction" & velH == 6 ~ 25.5,
+    Congruent == "Opposite Directions" & velH == 4 ~ 42.9,
+    Congruent == "Opposite Directions" & velH == 5 ~ 48.5,
+    Congruent == "Opposite Directions" & velH == 6 ~ 53.7 ,
+    Congruent == "No Motion" & velH == 4 ~ 22.8,
+    Congruent == "No Motion" & velH == 5 ~ 28.5,
+    Congruent == "No Motion" & velH == 6 ~ 34.0
+  ))
+
+
 #####stats tests for motion estimation
 LMM_Mean = lmer(Mean ~ Congruent + (velH | subject),
                 data = FittedPsychometricFunctions_Analysis)
 LMM_Mean_CI = confint(LMM_Mean,method = "boot")
 
-LMM_SD = lmer(log(SD) ~ Congruent + (velH | subject),
-                data = FittedPsychometricFunctions_Analysis)
-LMM_SD_CI = confint(LMM_SD,method = "boot")
+LMM_SD_Opposite_Test = lmer(log(SD) ~ Congruent + (velH | subject),
+                data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Same Direction"))
+LMM_SD_Opposite_Null = lmer(log(SD) ~ Congruent + (velH | subject),
+                data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Same Direction"))
+anova(LMM_SD_Opposite_Test,LMM_SD_Opposite_Null)
 
+LMM_SD_Same_Test = lmer(log(SD) ~ Congruent + (velH | subject),
+                data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Opposite Directions"))
+LMM_SD_Same_Null = lmer(log(SD) ~ Congruent + (velH | subject),
+                data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Opposite Directions"))
+anova(LMM_SD_Same_Test,LMM_SD_Same_Null)
 
 save(FittedPsychometricFunctions_Analysis, file = paste0(dirname(rstudioapi::getSourceEditorContext()$path),
                                                             "/SavedVariables/FittedPsychometricFunctions_Analysis.RData"))

@@ -9,17 +9,7 @@ require(lmerTest)
 
 set.seed(5)
 
-# ####Pilot data prediction
-# PredictionAmbika = read.table("Data/2_Prediction/Prediction_Ambika.txt", head = TRUE)
-# PredictionAmbika$ID = "Ambika"
-# PredictionAhmed = read.table("Data/2_Prediction/Prediction_Ahmed.txt", head = TRUE)
-# PredictionAhmed$ID = "Ahmed"
-# PredictionJohn = read.table("Data/2_Prediction/Prediction_John.txt", head = TRUE)
-# PredictionJohn$ID = "John"
-# PredictionLaurence = read.table("Data/2_Prediction/Prediction_Laurence.txt", head = TRUE)
-# PredictionLaurence$ID = "Laurence"
-# Prediction = rbind(PredictionAmbika,PredictionAhmed,PredictionJohn,PredictionLaurence)
-
+###
 Prediction = read.csv("Data/2_Prediction/Data_Prediction.csv")
 
 #### outlier analysis
@@ -31,10 +21,6 @@ Prediction = Prediction %>% mutate(Congruent = case_when(velH*velH_Subject > 0 ~
   mutate(velH_Abs = abs(velH))
 nPostOutliers = length(Prediction$velH)
 (nPreOutliers-nPostOutliers)/nPreOutliers
-
-ggplot(Prediction,aes(Response_Time-Occlusion_Duration,color = Congruent)) +
-  geom_density() +
-  facet_wrap(ID~.)
 
 ####################### Accuracy
 ####LMM
@@ -59,13 +45,26 @@ Prediction_SDs = Prediction %>%
          SD_per_Condition = sd(Response_Time)) %>% 
   slice(1)
 
+Prediction_SDs = Prediction_SDs %>% 
+  mutate(RetinalSpeed = case_when(
+    Congruent == "Same Direction" & velH == 4 ~ 21.5,
+    Congruent == "Same Direction" & velH == 5 ~ 23.3,
+    Congruent == "Same Direction" & velH == 6 ~ 25.5,
+    Congruent == "Opposite Directions" & velH == 4 ~ 42.9,
+    Congruent == "Opposite Directions" & velH == 5 ~ 48.5,
+    Congruent == "Opposite Directions" & velH == 6 ~ 53.7 ,
+    Congruent == "Observer Static" & velH == 4 ~ 22.8,
+    Congruent == "Observer Static" & velH == 5 ~ 28.5,
+    Congruent == "Observer Static" & velH == 6 ~ 34.0
+  ))
+
 #Opposite Directions
-Model1 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + Congruent + (velH | ID) + (1 | Occlusion_Duration),
+Model1 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + Congruent + (velH | ID) + (1 | Occlusion_Duration),
               data = Prediction_SDs %>% 
                 filter(Congruent != "Same Direction")  %>% 
                 filter(SD_per_Condition > 0.01),
               REML = FALSE)
-Model2 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | ID) + (1 | Occlusion_Duration),
+Model2 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + (velH | ID) + (1 | Occlusion_Duration),
               data = Prediction_SDs %>% 
                 filter(Congruent != "Same Direction")  %>% 
                 filter(SD_per_Condition > 0.01),
@@ -75,12 +74,12 @@ summary(Model1)
 
 
 #Same Direction
-Model3 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + Congruent + (velH | ID) + (1 | Occlusion_Duration),
+Model3 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + Congruent + (velH | ID) + (1 | Occlusion_Duration),
               data = Prediction_SDs %>% 
                 filter(Congruent != "Opposite Directions") %>% 
                 filter(SD_per_Condition > 0.01),
               REML = FALSE)
-Model4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | ID) + (1 | Occlusion_Duration),
+Model4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + (velH | ID) + (1 | Occlusion_Duration),
               data = Prediction_SDs %>% 
                 filter(Congruent != "Opposite Directions") %>% 
                 filter(SD_per_Condition > 0.01),

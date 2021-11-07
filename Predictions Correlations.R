@@ -177,8 +177,6 @@ FittedPsychometricFunctions = FittedPsychometricFunctions %>%
          Diff_SD_Same = SD_Same-SD_Static)
 
 
-
-
 Correlations = Predictions %>%
   group_by(Participant) %>%
   filter(occlusion_time %in% c(0.5,0.6,0.7)) %>% 
@@ -196,7 +194,6 @@ Correlations = Correlations %>% #make yet more columns where we get the differen
          DifMeanExtrapolatedMotion_Same = MeanExtrapolatedDuration_Same-MeanExtrapolatedDuration_Static,
          DifSDExtrapolatedMotion_Opposite = SDExtrapolatedDuration_Opposite-SDExtrapolatedDuration_Static,
          DifSDExtrapolatedMotion_Same = SDExtrapolatedDuration_Same-SDExtrapolatedDuration_Static)
-
 
 ###match values from the speed estimation task into the dataframe with the prediction values, for each condition and participant
 for(i in 1:length(FittedPsychometricFunctions$Participant)){
@@ -236,7 +233,7 @@ summary(PSE_LMM_Corr_Opposite)
 
 SD_LMM_Corr_Opposite_Test = lm(DifSDExtrapolatedMotion_Opposite ~  DifMeanExtrapolatedMotion_Opposite + Diff_SD_Opposite,
                     data =  Correlations)
-SD_LMM_Corr_Opposite_Null = lm(DifSDExtrapolatedMotion_Opposite ~ DifMeanExtrapolatedMotion_Opposite,
+SD_LMM_Corr_Opposite_Null = lm(DifSDExtrapolatedMotion_Opposite ~ DifMeanExtrapolatedMotion_Opposite ,
                                  data =  Correlations)
 anova(SD_LMM_Corr_Opposite_Test,SD_LMM_Corr_Opposite_Null)
 summary(SD_LMM_Corr_Opposite_Test)
