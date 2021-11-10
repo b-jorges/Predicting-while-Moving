@@ -10,8 +10,8 @@ require(purrr)
 
 Powerframe = data.frame()
 
-iterations_lower = 1
-iterations_upper = 150
+iterations_lower = 151
+iterations_upper = 250
 
 set.seed(iterations_lower)
 
@@ -347,8 +347,8 @@ for (l in iterations_lower:iterations_upper){
                LMM_Prediction_Accuracy,LMM_Prediction_SD1,LMM_Prediction_SD2,PSE_LMM_Corr_Opposite,SD_LMM_Corr_Opposite_Test,
                SD_LMM_Corr_Opposite_Null,LMM_Prediction_SD3,LMM_Prediction_SD4,PSE_LMM_Corr_Same,SD_LMM_Corr_Same_Test,SD_LMM_Corr_Same_Null)
 
-        save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC1.RData")
-        # save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC2.RData")
+        # save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC1.RData")
+        save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC2.RData")
       }
     }
   }
