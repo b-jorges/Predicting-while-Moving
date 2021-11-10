@@ -16,3 +16,7 @@ For Prediction First: https://youtu.be/7EA21uNC5Rw
 
 The test data in the "Data" folder was collected by one of the authors (of themselves) and then copied-and-pasted with a different label in order to test 
 the analyses scripts (which include LMM analyses that require at least two participants).
+
+A video sequence from the prediction task: https://www.youtube.com/watch?v=phratRswyao&ab_channel=Bj%C3%B6rnJ%C3%B6rges
+From the prediction training: https://www.youtube.com/watch?v=iAfY7mxEqSI&ab_channel=Bj%C3%B6rnJ%C3%B6rges
+A video sequence from the speed estimation task: https://www.youtube.com/watch?v=05JA19xoieY&ab_channel=Bj%C3%B6rnJ%C3%B6rges

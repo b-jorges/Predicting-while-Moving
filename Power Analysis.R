@@ -11,11 +11,12 @@ require(purrr)
 Powerframe = data.frame()
 
 iterations_lower = 1
-iterations_upper = 250
+iterations_upper = 150
 
 set.seed(iterations_lower)
 
 time_init_overall = Sys.time()
+
 for (l in iterations_lower:iterations_upper){
   time_init = Sys.time()
 
@@ -40,7 +41,6 @@ for (l in iterations_lower:iterations_upper){
                                             Variability_ID = rnorm(length(Participants),0.2,0.3), #get self-motion variability for each participant
                                             PSE_ID = 1, #rnorm(length(Participants),1,0.15), #multiplicator for the PSE for each person
                                             SD_ID = rnorm(length(Participants),1,0.15)) #multiplicator for the
-
 
         ###########with variability
         #trials per participant:
@@ -102,21 +102,7 @@ for (l in iterations_lower:iterations_upper){
                  time_perceived = PerceivedDistance/PerceivedvelH,
                  TimingError = time_perceived-CorrectTime) %>%
           filter(abs(time_perceived) < abs(3*CorrectTime))
-
         ######
-        
-        Predictions = Predictions %>% 
-          mutate(RetinalSpeed = case_when(
-            SelfmotionDirection == "Same Direction" & velH == 4 ~ 21.5,
-            SelfmotionDirection == "Same Direction" & velH == 5 ~ 23.3,
-            SelfmotionDirection == "Same Direction" & velH == 6 ~ 25.5,
-            SelfmotionDirection == "Opposite Directions" & velH == 4 ~ 42.9,
-            SelfmotionDirection == "Opposite Directions" & velH == 5 ~ 48.5,
-            SelfmotionDirection == "Opposite Directions" & velH == 6 ~ 53.7 ,
-            SelfmotionDirection == "Observer Static" & velH == 4 ~ 22.8,
-            SelfmotionDirection == "Observer Static" & velH == 5 ~ 28.5,
-            SelfmotionDirection == "Observer Static" & velH == 6 ~ 34.0
-          ))
 
         #and the extrapolated SD for the corresponding mean timing error
         Prediction_SDs = Predictions %>%
@@ -132,26 +118,26 @@ for (l in iterations_lower:iterations_upper){
         summary(LMM_Prediction_Accuracy)
 
         #Prediction Precision
-        LMM_Prediction_SD1 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
+        LMM_Prediction_SD1 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
                                   data = Prediction_SDs %>%
-                                    filter(SelfmotionDirection != "Same Direction"),
+                                    filter(SelfmotionDirection != "Same Direction" & SD_per_Condition > 0.01),
                                   REML = FALSE)
-        LMM_Prediction_SD2 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + (velH | Participant) + (1 | occlusion_time),
+        LMM_Prediction_SD2 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | Participant) + (1 | occlusion_time),
                                   data = Prediction_SDs %>%
-                                    filter(SelfmotionDirection != "Same Direction"),
+                                    filter(SelfmotionDirection != "Same Direction" & SD_per_Condition > 0.01),
                                   REML = FALSE)
+        anova(LMM_Prediction_SD1,LMM_Prediction_SD2)
 
 
         #Prediction Precision
-        LMM_Prediction_SD3 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
+        LMM_Prediction_SD3 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
                                   data = Prediction_SDs %>%
-                                    filter(SelfmotionDirection != "Opposite Directions"),
+                                    filter(SelfmotionDirection != "Opposite Directions" & SD_per_Condition > 0.01),
                                   REML = FALSE)
-        LMM_Prediction_SD4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + RetinalSpeed + (velH | Participant) + (1 | occlusion_time),
+        LMM_Prediction_SD4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | Participant) + (1 | occlusion_time),
                                   data = Prediction_SDs %>%
-                                    filter(SelfmotionDirection != "Opposite Directions"),
+                                    filter(SelfmotionDirection != "Opposite Directions" & SD_per_Condition > 0.01),
                                   REML = FALSE)
-
 
 ######make data frame for motion estimation based on same individual values as for prediction:
         ConditionOfInterest = c("Observer Static", "Same Direction", "Opposite Directions")
@@ -214,40 +200,34 @@ for (l in iterations_lower:iterations_upper){
         Parameters2$SD = Parameters$par[Parameters$parn == "p2"]
         FittedPsychometricFunctions = Parameters2
 
-        FittedPsychometricFunctions = FittedPsychometricFunctions %>% 
-          mutate(RetinalSpeed = case_when(
-            ConditionOfInterest == "Same Direction" & StandardValues == 4 ~ 21.5,
-            ConditionOfInterest == "Same Direction" & StandardValues == 5 ~ 23.3,
-            ConditionOfInterest == "Same Direction" & StandardValues == 6 ~ 25.5,
-            ConditionOfInterest == "Opposite Directions" & StandardValues == 4 ~ 42.9,
-            ConditionOfInterest == "Opposite Directions" & StandardValues == 5 ~ 48.5,
-            ConditionOfInterest == "Opposite Directions" & StandardValues == 6 ~ 53.7 ,
-            ConditionOfInterest == "Observer Static" & StandardValues == 4 ~ 22.8,
-            ConditionOfInterest == "Observer Static" & StandardValues == 5 ~ 28.5,
-            ConditionOfInterest == "Observer Static" & StandardValues == 6 ~ 34.0
-          ))
-        
+
 #####stats tests for motion estimation
         LMM_Mean = lmer(Mean ~ ConditionOfInterest + (StandardValues | Participant),
                          data = FittedPsychometricFunctions)
 
-        LMM_SD_Test_Opposite = lmer(log(SD) ~ Mean + RetinalSpeed + ConditionOfInterest + (StandardValues | Participant),
+        LMM_SD_Test_Opposite = lmer(log(SD) ~ ConditionOfInterest + Mean + (StandardValues | Participant),
                          data = FittedPsychometricFunctions  %>%
                                   filter(SD > 0.01 & ConditionOfInterest != "Same Direction"),
                          REML = FALSE)
-        LMM_SD_Null_Opposite = lmer(log(SD) ~ Mean + RetinalSpeed + (StandardValues | Participant),
+        LMM_SD_Null_Opposite = lmer(log(SD) ~ Mean + (StandardValues | Participant),
                                 data = FittedPsychometricFunctions  %>%
                                   filter(SD > 0.01 & ConditionOfInterest != "Same Direction"),
                                 REML = FALSE)
+        summary(LMM_SD_Test_Opposite)
+
+        LMM_SD_Test_Same = lmer(log(SD) ~ ConditionOfInterest + Mean + (StandardValues | Participant),
+                                data = FittedPsychometricFunctions  %>%
+                                  filter(SD > 0.01 & ConditionOfInterest != "Opposite Directions"),
+                                REML = FALSE)
+        LMM_SD_Null_Same = lmer(log(SD) ~ Mean + (StandardValues | Participant),
+                                data = FittedPsychometricFunctions  %>%
+                                  filter(SD > 0.01 & ConditionOfInterest != "Opposite Directions"),
+                                REML = FALSE)
+        anova(LMM_SD_Test_Same,LMM_SD_Null_Same)
+        summary(LMM_SD_Test_Same)
         
-        LMM_SD_Test_Same = lmer(log(SD) ~ Mean + RetinalSpeed + ConditionOfInterest + (StandardValues | Participant),
-                                data = FittedPsychometricFunctions  %>%
-                                  filter(SD > 0.01 & ConditionOfInterest != "Opposite Directions"),
-                                REML = FALSE)
-        LMM_SD_Null_Same = lmer(log(SD) ~ Mean + RetinalSpeed + (StandardValues | Participant),
-                                data = FittedPsychometricFunctions  %>%
-                                  filter(SD > 0.01 & ConditionOfInterest != "Opposite Directions"),
-                                REML = FALSE)
+        anova(LMM_SD_Test_Opposite,LMM_SD_Null_Opposite)
+        summary(LMM_SD_Test_Opposite)
 
         ####Pre-work to get the values needed for correlation stuff
         #we compute the difference between baseline and opposite/same for each condition
@@ -367,8 +347,8 @@ for (l in iterations_lower:iterations_upper){
                LMM_Prediction_Accuracy,LMM_Prediction_SD1,LMM_Prediction_SD2,PSE_LMM_Corr_Opposite,SD_LMM_Corr_Opposite_Test,
                SD_LMM_Corr_Opposite_Null,LMM_Prediction_SD3,LMM_Prediction_SD4,PSE_LMM_Corr_Same,SD_LMM_Corr_Same_Test,SD_LMM_Corr_Same_Null)
 
-        save(Powerframe, file = "C:/Users/bjoer/Dropbox/Science/Self-Motion and Motion Prediction/SavedVariables/Powerframe_PC1.RData")
-        # save(Powerframe, file = "C:/Users/bjoer/Dropbox/Science/Self-Motion and Motion Prediction/SavedVariables/Powerframe_PC2.RData")
+        save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC1.RData")
+        # save(Powerframe, file = "C:/Users/bjoer/Documents/GitHub/Predicting-while-Moving/SavedVariables/Powerframe_PC2.RData")
       }
     }
   }
@@ -378,16 +358,20 @@ for (l in iterations_lower:iterations_upper){
          " minutes have already passed."))
 }
 
-print(paste0("Guuuuurl, enough. We're done. And it's only taken us ", round(difftime(Sys.time(), time_init_overall, units='mins'),2), " minutes of our lives."))
+# print(paste0("Guuuuurl, enough. We're done. And it's only taken us ", round(difftime(Sys.time(), time_init_overall, units='mins'),2), " minutes of our lives."))
+# 
 # 
 # load(file = paste0(dirname(rstudioapi::getSourceEditorContext()$path),
 #                                "/SavedVariables/Powerframe_PC1.RData"))
 # Powerframe_PC1 = Powerframe
 # load(file = paste0(dirname(rstudioapi::getSourceEditorContext()$path),
-#                    "/SavedVariables/Powerframe_PC2.RData"))
+#                                "/SavedVariables/Powerframe_PC2.RData"))
 # Powerframe_PC2 = Powerframe
+# load(file = paste0(dirname(rstudioapi::getSourceEditorContext()$path),
+#                                "/SavedVariables/Powerframe_PC3.RData"))
+# Powerframe_PC3 = Powerframe
 # 
-# Powerframe = rbind(Powerframe_PC1,Powerframe_PC2)
+# Powerframe = rbind(Powerframe_PC1,Powerframe_PC2,Powerframe_PC3)
 # 
 # 
 # #do everything at alpha level of 0.05
