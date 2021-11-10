@@ -85,11 +85,11 @@ summary(LMM_Prediction_Accuracy)
 #Models for precision
 Model1 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
               data = Prediction_SDs %>%
-                filter(SelfmotionDirection != "Same Direction"),
+                filter(SelfmotionDirection != "Same Direction" & SD_per_Condition > 0.1),
               REML = FALSE)
 Model2 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | Participant) + (1 | occlusion_time),
               data = Prediction_SDs %>%
-                filter(SelfmotionDirection != "Same Direction"),
+                filter(SelfmotionDirection != "Same Direction" & SD_per_Condition > 0.1),
               REML = FALSE)
 anova(Model1,Model2)
 summary(Model1)
@@ -97,11 +97,11 @@ summary(Model1)
 #Same Direction ("control" to see if everything works alright. Same Direction has, we assume, no affect, so this should come out not significant in 95% of the times)
 Model3 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + SelfmotionDirection + (velH | Participant) + (1 | occlusion_time),
               data = Prediction_SDs %>%
-                filter(SelfmotionDirection != "Opposite Directions"),
+                filter(SelfmotionDirection != "Opposite Directions" & SD_per_Condition > 0.1),
               REML = FALSE)
 Model4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | Participant) + (1 | occlusion_time),
               data = Prediction_SDs %>%
-                filter(SelfmotionDirection != "Opposite Directions"),
+                filter(SelfmotionDirection != "Opposite Directions" & SD_per_Condition > 0.1),
               REML = FALSE)
 anova(Model3,Model4)
 summary(Model3)

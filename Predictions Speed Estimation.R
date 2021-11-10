@@ -86,9 +86,16 @@ summary(Model1)
 
 
 #Models for precision
-Model2 = lmer(log(SD) ~ ConditionOfInterest + (StandardValues | Participant),
-              data = FittedPsychometricFunctions)
-summary(Model2)
+Model_Opposite_Test = lmer(log(SD) ~ ConditionOfInterest + Mean + (StandardValues | Participant),
+                       data = FittedPsychometricFunctions %>% filter(ConditionOfInterest != "Same Direction" & SD > 0.1))
+Model_Opposite_Null = lmer(log(SD) ~ Mean + (StandardValues | Participant),
+                       data = FittedPsychometricFunctions %>% filter(ConditionOfInterest != "Same Direction" & SD > 0.1))
+
+Model_Same_Test = lmer(log(SD) ~ ConditionOfInterest + Mean + (StandardValues | Participant),
+              data = FittedPsychometricFunctions %>% filter(ConditionOfInterest != "Opposite Directions" & SD > 0.1))
+Model_Same_Null = lmer(log(SD) ~ Mean + (StandardValues | Participant),
+              data = FittedPsychometricFunctions %>% filter(ConditionOfInterest != "Opposite Directions" & SD > 0.1))
+anova(Model_Same_Test,Model_Same_Null)
 
 # Plots with Predictions (Figure 03)
 Figure_SpeedPredictions1 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Factor = paste0(StandardValues," m/s")),
