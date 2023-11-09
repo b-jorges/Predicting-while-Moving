@@ -93,7 +93,7 @@ load(file=paste0(dirname(rstudioapi::getSourceEditorContext()$path),"/SavedVaria
 sum(FittedPsychometricFunctions_Analysis$SD < 0.01)
 mean(FittedPsychometricFunctions_Analysis$SD < 0.01)
 
-LMM_SD_Opposite_Test = lmer(log(SD) ~ Mean*Congruent + (velH | subject),
+LMM_SD_Opposite_Test = lmer(log(SD) ~ Mean + Congruent + (velH | subject),
                 data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Same Direction" & SD > 0.01))
 LMM_SD_Opposite_Null = lmer(log(SD) ~ Mean + (velH | subject),
                 data = FittedPsychometricFunctions_Analysis %>% filter(Congruent != "Same Direction" & SD > 0.01))
@@ -107,11 +107,13 @@ LMM_SD_Same_Null = lmer(log(SD) ~ Mean + (velH | subject),
 anova(LMM_SD_Same_Test,LMM_SD_Same_Null)
 summary(LMM_SD_Same_Test)
 
-
-
 # Actual Data Plots (Figure 08)
-Figure_Speed_PSEs = ggplot(FittedPsychometricFunctions_Analysis %>% mutate(velH_Factor = paste0(velH," m/s")),
-                                  aes(velH_Factor,Mean,color = Congruent)) +
+Figure_Speed_PSEs = ggplot(FittedPsychometricFunctions_Analysis %>% mutate(velH_Factor = paste0(velH," m/s")) %>% 
+                             mutate(Congruent2 = case_when(
+                               Congruent == "No Motion" ~ "1Observer Static",
+                               Congruent == "Same Direction" ~ "2Same Direction",
+                               Congruent == "Opposite Directions" ~ "3Opposite Directions")),
+                                  aes(velH_Factor,Mean,color = Congruent2)) +
   geom_boxplot(size = 1.5) +
   scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
   xlab("Motion Profile") +
@@ -120,14 +122,18 @@ Figure_Speed_PSEs = ggplot(FittedPsychometricFunctions_Analysis %>% mutate(velH_
   theme(legend.position = "none")  +
   ggtitle("A.")
 
-Figure_Speed_SD = ggplot(FittedPsychometricFunctions_Analysis %>% mutate(velH_Factor = paste0(velH," m/s")),
-                         aes(Mean,SD,color = Congruent)) +
+Figure_Speed_SD = ggplot(FittedPsychometricFunctions_Analysis %>% mutate(velH_Factor = paste0(velH," m/s")) %>% 
+                           mutate(Congruent2 = case_when(
+                             Congruent == "No Motion" ~ "1Observer Static",
+                             Congruent == "Same Direction" ~ "2Same Direction",
+                             Congruent == "Opposite Directions" ~ "3Opposite Directions")),
+                         aes(Mean,SD,color = Congruent2)) +
   geom_point(size = 2, alpha = 0.3) +
   geom_smooth(method = "lm",
               formula = y ~ x, se = FALSE) +
   xlab("PSE (m/s)") + 
   ylab("JND (m/s)") +
-  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange"))  +
+  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange"), labels = c("Observer Static","Same Direction","Opposite Direction"))  +
   ggtitle("B.")
 
 plot_grid(Figure_Speed_PSEs,Figure_Speed_SD, rel_widths = c(0.8,1.1))

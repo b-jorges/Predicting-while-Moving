@@ -4,7 +4,6 @@ require(cowplot)
 theme_set(theme_cowplot())
 setwd(dirname(rstudioapi::getSourceEditorContext()$path)) #set path of this script as working directory
 source("Utilities/parabolic.r") #load a bunch of custom functions from the file "parabolic.r" in the folder "Utilities"
-require(gganimate)
 
 #this file describes and visualizes the geometry of the prediction task
 velH = c(-8,-6.6, 6.6, 8) #m/s
@@ -132,7 +131,7 @@ ggplot(Errything %>% filter(occlusion_duration == 0.5 & velH %in% c(-8,8)),aes(T
   geom_point(size = 3) +
   facet_grid(velH~self_velH) +
   labs(x = "Time in trial (s)",
-       y = "Angular Speed (°/s)") +
+       y = "Angular Speed (?/s)") +
   scale_color_manual(name = "",
                      values = c("lightblue","blue"))
 ggsave("Figures/Angular Speed.jpg", w = 6, h = 6)
@@ -141,7 +140,7 @@ ggplot(Errything %>% filter(occlusion_duration == 0.5 & velH %in% c(-8,8)),aes(T
   geom_point(size = 3) +
   facet_grid(velH~self_velH) +
   labs(x = "Time in trial (s)",
-       y = "Angular Speed (°/s)") +
+       y = "Angular Speed (?/s)") +
   scale_color_manual(name = "",
                      values = c("lightblue","blue"))
 ggsave("Figures/Angle.jpg", w = 6, h = 6)

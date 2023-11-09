@@ -4,9 +4,8 @@ require(lme4)
 require(lmerTest)
 require(quickpsy)
 require(purrr)
-source("Utilities/parabolic.r")
-
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+source("Utilities/parabolic.r")
 
 velH = c(4, 5, 6) #m/s
 self_velH = c(-3.6,0,3.6) #meters over half a second, = 4m/s on average, but Gaussian motion profile
@@ -98,21 +97,32 @@ Model_Same_Null = lmer(log(SD) ~ Mean + (StandardValues | Participant),
 anova(Model_Same_Test,Model_Same_Null)
 
 # Plots with Predictions (Figure 03)
-Figure_SpeedPredictions1 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Factor = paste0(StandardValues," m/s")),
-                                  aes(velH_Factor,Mean,color = ConditionOfInterest)) +
+Figure_SpeedPredictions1 = ggplot(FittedPsychometricFunctions %>% 
+                                    mutate(velH_Factor = paste0(StandardValues," m/s"),
+                                           MotionProfile = case_when(
+                                             ConditionOfInterest == "Same Direction" ~ "3Same Direction",
+                                             ConditionOfInterest == "Opposite Directions" ~ "2Opposite Directions",
+                                             ConditionOfInterest == "Observer Static" ~ "1Observer Static",
+                                           )),
+                                  aes(velH_Factor,Mean,color = MotionProfile)) +
   geom_boxplot(size = 1.5) +
-  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
+  scale_color_manual(name = "Motion Profile", values = c("red","orange","blue"), labels = c("Observer Static",
+                                                                                            "Opposite Directions",
+                                                                                            "Same Direction")) +
   xlab("Motion Profile") +
   ylab("PSE (m/s)") +
   scale_x_discrete(name = "")  +
   theme(legend.position = c(0.1,0.8))
 
-Predictions$SelfmotionDirection
-FittedPsychometricFunctions$ConditionOfInterest
-Figure_SpeedPredictions2 = ggplot(FittedPsychometricFunctions %>% mutate(velH_Factor = paste0(StandardValues," m/s")),
-                                  aes(velH_Factor,SD,color = ConditionOfInterest)) +
+Figure_SpeedPredictions2 = ggplot(FittedPsychometricFunctions %>% 
+                                    mutate(velH_Factor = paste0(StandardValues," m/s"),
+                                          MotionProfile = case_when(
+                                            ConditionOfInterest == "Same Direction" ~ "3Same Direction",
+                                            ConditionOfInterest == "Opposite Directions" ~ "2Opposite Directions",
+                                            ConditionOfInterest == "Observer Static" ~ "1Observer Static")),
+                                  aes(velH_Factor,SD,color = MotionProfile)) +
   geom_boxplot(size = 1.5) +
-  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
+  scale_color_manual(name = "Motion Profile", values = c("red","orange","blue")) +
   scale_x_discrete(name = "Motion Profile") +
   xlab("Motion Profile") + 
   ylab("SD of Psychometric Function (m/s)") +

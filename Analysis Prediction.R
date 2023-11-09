@@ -95,26 +95,35 @@ Model4 = lmer(log(SD_per_Condition) ~ Mean_per_Condition + (velH | ID) + (1 | Oc
 anova(Model3,Model4)
 summary(Model3)
 
-
 ##########plots
-Figure_Predictions1 = ggplot(Prediction %>% filter(Occlusion_Duration %in% c(0.5,0.6,0.7)),aes(as.factor(Occlusion_Duration),Response_Time-Occlusion_Duration,col = Congruent)) +
-  geom_boxplot() +
+Figure_Predictions1 = ggplot(Prediction %>% filter(Occlusion_Duration %in% c(0.5,0.6,0.7)) %>% 
+                               mutate(Congruent2 = case_when(
+                                 Congruent == "Observer Static" ~ "1Observer Static",
+                                 Congruent == "Same Direction" ~ "2Same Direction",
+                                 Congruent == "Opposite Directions" ~ "3Opposite Directions")),
+                             aes(as.factor(Occlusion_Duration),Response_Time-Occlusion_Duration,col = Congruent2)) +
+  geom_boxplot(size = 1.5) +
   xlab("Occlusion Duration (s)") +
   ylab("Error (Perceived Duration - Occluded Duration; s)") +
   scale_color_manual(name = "Motion Profile", values = c("red","blue","orange")) +
   ggtitle("A.") +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  geom_hline(yintercept = 0, linetype = 2, linewidth = 2)
 
 Figure_Predictions2 = ggplot(Prediction_SDs %>% filter(Occlusion_Duration %in% c(0.5,0.6,0.7)) %>% 
                                mutate(velH_Factor = paste0(velH_Abs," m/s")) %>% 
-                               filter(SD_per_Condition > 0.01),
-                             aes(Mean_per_Condition,SD_per_Condition,color = Congruent)) +
+                               filter(SD_per_Condition > 0.01) %>% 
+                               mutate(Congruent2 = case_when(
+                                 Congruent == "Observer Static" ~ "1Observer Static",
+                                 Congruent == "Same Direction" ~ "2Same Direction",
+                                 Congruent == "Opposite Directions" ~ "3Opposite Directions")),
+                             aes(Mean_per_Condition,SD_per_Condition,color = Congruent2)) +
   geom_point(size = 2, alpha = 0.1) +
   geom_smooth(method = "lm",
               formula = y ~ x, se = FALSE) +
   xlab("Mean Extrapolated Duration per Condition and Participant (s)") +
   ylab("SD of Extrapolated Duration per Condition and Participant (s)") +
-  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange"))  +
+  scale_color_manual(name = "Motion Profile", values = c("red","blue","orange"), labels = c("Observer Static","Same Direction","Opposite Direction"))  +
   ggtitle("B.")
 
 plot_grid(Figure_Predictions1,Figure_Predictions2, rel_widths = c(0.8,1.1))

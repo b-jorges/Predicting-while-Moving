@@ -110,12 +110,14 @@ summary(Model3)
 
 #Plot Predictions (Figure 02 in paper)
 Figure_Predictions1 = ggplot(Predictions %>% filter(occlusion_time %in% c(0.5,0.6,0.7)),aes(as.factor(occlusion_time),time_perceived-occlusion_time,col = SelfmotionDirection)) +
-  geom_boxplot() +
+  geom_boxplot(size = 1.5) +
   xlab("Occlusion Duration (s)") +
   ylab(expression("Duration"["Perceived"]*" - Duration"["Correct"]*" (m/s)")) +
   scale_color_manual(name = "Motion Profile", values = c("red","orange","blue")) +
   ggtitle("A.") +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  geom_hline(yintercept = 0, linetype = 2, linewidth = 2)
+  
 
 Figure_Predictions2 = ggplot(Prediction_SDs %>% 
                                filter(occlusion_time %in% c(0.5,0.6,0.7)) %>% 
